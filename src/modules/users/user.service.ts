@@ -11,6 +11,12 @@ export class UserService {
     constructor( private readonly prisma : PrismaService) {}
     
     async create(body: CreateUserDTO): Promise<User> {
+
+        const userExists = await this.prisma.user.findUnique({ where: { email: body.email } });
+        if (userExists){
+            throw new HttpException('Email already in use', HttpStatus.BAD_REQUEST);
+        }
+
         const hashedPassword = await bcrypt.hash(body.password, 10);
         body.password = hashedPassword;
         return await this.prisma.user.create({data: body, select: userSelectFields});
@@ -39,7 +45,7 @@ export class UserService {
     }
 
     async findByEmail(email: string) {
-        return await this.prisma.user.findUnique({ where: { email }, select: userSelectFields });
+        return await this.prisma.user.findUnique({ where: { email }});
     }
 
     private async isUserExist(id: number){
