@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Body, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { Role, User } from "@prisma/client";
 import { AuthLoginDTO } from "./domain/dto/authLogin.dto";
@@ -8,6 +8,7 @@ import { UserService } from "../users/user.service";
 import { AuthRegisterDTO } from "./domain/dto/authRegister.dto";
 import { CreateUserDTO } from "../users/domain/dto/createUser.dto";
 import { AuthResetPasswordDTO } from "./domain/dto/authResetPassword.dto";
+import { AuthForgotPasswordDTO } from "./domain/dto/authForgotPassword.dto";
 
 
 
@@ -19,10 +20,10 @@ export class AuthService {
         private readonly userService: UserService
     ) {}
 
-    async generateToken(user: User){
+    async generateToken(user: User, expiresIn = '1h') {
         const payload = { sub: user.id, name: user.name };
         const options = { 
-            expiresIn: '1h',
+            expiresIn: expiresIn,
             issuer: 'dnc_hotel',
             audience: 'users'
          }; 
@@ -31,10 +32,10 @@ export class AuthService {
 
     async login({ email, password }: AuthLoginDTO){
         const user = await this.userService.findByEmail(email);
-        if (!user || (await bcrypt.compare(password, user.password))){
+
+        if (!user || !await bcrypt.compare(password, user.password)) {
             throw new UnauthorizedException('Invalid credentials');
         }
-
         return this.generateToken(user);
     }
 
@@ -50,13 +51,21 @@ export class AuthService {
         return this.generateToken(user);
     }
 
-    async resetPassword({token, password}: AuthResetPasswordDTO){
-        const {valid, decoded} = await this.jwtService.verifyAsync(token);
+    async reset({ token, password }: AuthResetPasswordDTO){
+        const { iat, exp, sub} = await this.jwtService.verifyAsync(token);
+        if (exp <= iat ) throw new UnauthorizedException('Invalid token');
 
-        if (!valid) throw new UnauthorizedException('Invalid token');
+        const user = await this.userService.update(sub, { password: await bcrypt.hash(password, 10) });
 
-        const user = await this.userService.update(decoded.sub, { password: await bcrypt.hash(password, 10) });
+        return user;
+    }
 
-        return this.generateToken(user);
+    async forgot({email}: AuthForgotPasswordDTO){
+        const user = await this.userService.findByEmail(email);
+        if (!user) throw new UnauthorizedException('Email not found');
+
+        const token = this.generateToken(user, '30m')
+
+        return token;
     }
 }
