@@ -52,10 +52,11 @@ export class AuthService {
     }
 
     async reset({ token, password }: AuthResetPasswordDTO){
-        const { iat, exp, sub} = await this.jwtService.verifyAsync(token);
-        if (exp <= iat ) throw new UnauthorizedException('Invalid token');
+        const { valid, decoded } = await this.validateToken(token);
 
-        const user = await this.userService.update(sub, { password: await bcrypt.hash(password, 10) });
+        if (!valid) throw new UnauthorizedException('Invalid or expired token');
+        
+        const user = await this.userService.update(decoded.sub, { password: await bcrypt.hash(password, 10) });
 
         return user;
     }
@@ -67,5 +68,18 @@ export class AuthService {
         const token = this.generateToken(user, '30m')
 
         return token;
+    }
+
+    async validateToken(token: string){
+        try {
+            const decoded = await this.jwtService.verifyAsync(token, {
+                secret: process.env.JWT_SECRET,
+                issuer: 'dnc_hotel',
+                audience: 'users'
+            });
+            return { valid: true, decoded };
+        } catch (e) {
+            return { valid: false, message: e.message };
+        }
     }
 }
