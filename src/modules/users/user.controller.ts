@@ -8,12 +8,14 @@ import { Role, type User as UserType } from "@prisma/client";
 import { Roles } from "src/shared/decorators/roles.decotaror";
 import { RoleGuard } from "src/shared/guards/role.guard";
 import { UserMatchGuard } from "src/shared/guards/userMatch.guard";
+import { ThrottlerGuard } from "@nestjs/throttler";
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('users')
 
 export class UserController {
     constructor( private userService: UserService ) {}
     
+    @UseGuards(ThrottlerGuard)
     @Get()
     list(@User('email') user: UserType){
         console.log(user);
