@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe, UseInterceptors, Res, UseGuards, Req } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe, UseInterceptors, Res, UseGuards, Req, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDTO } from "./domain/dto/createUser.dto";
 import { UpdateUserDTO } from "./domain/dto/updateUser.dto";
@@ -9,6 +9,8 @@ import { Roles } from "src/shared/decorators/roles.decotaror";
 import { RoleGuard } from "src/shared/guards/role.guard";
 import { UserMatchGuard } from "src/shared/guards/userMatch.guard";
 import { ThrottlerGuard } from "@nestjs/throttler";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { FileValidatorInterceptor } from "src/shared/interceptors/fileValidator.interceptor";
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('users')
 
@@ -45,6 +47,22 @@ export class UserController {
     delete(@Param('id', ParseIntPipe) id : number){
         return this.userService.delete(id)
     }
+    @UseInterceptors(FileInterceptor('avatar'), FileValidatorInterceptor)
+    @Post('avatar')
+        uploadAvatar(@User('id') id: Number, 
+        @UploadedFile(
+            new ParseFilePipe({
+                validators: [
+                    new FileTypeValidator({
+                        fileType: 'image/*',
+                    }),
+                    new MaxFileSizeValidator({ maxSize: 900 * 1024})
+                ],
+            })
+        ) avatar: Express.Multer.File){
+        return this.userService.uploadAvatar(id, avatar.filename);
+        }
+    
 
 
 }
