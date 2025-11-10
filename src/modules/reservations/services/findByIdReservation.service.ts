@@ -8,8 +8,8 @@ export class FindByIdReservationService {
     @Inject(RESERVATION_TOKEN_REPOSITORY)
     private readonly reservationRepository: IReservationRepository,
   ){}
-    execute(id: number) {
-        return this.reservationRepository.findById(id);
+    async execute(id: number) {
+        return await this.reservationRepository.findById(id);
     }
 
 }

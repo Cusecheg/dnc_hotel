@@ -6,17 +6,24 @@ import { FindAllReservationService } from '../services/findAllReservation.servic
 import { FindByIdReservationService } from '../services/findByIdReservation.service';
 import { FindByUserReservationService } from '../services/findByUserReservetion.service';
 import { AuthGuard } from 'src/shared/guards/auth.guard';
+import { ReservationStatus, Role } from '@prisma/client';
+import { UpdateStatusReservationService } from '../services/updateStatusReservation.service';
+import { ParamId } from 'src/shared/decorators/paramId.decorator';
+import { RoleGuard } from 'src/shared/guards/role.guard';
+import { Roles } from 'src/shared/decorators/roles.decotaror';
+import { UpdateStatusReservationDto } from '../domain/dto/update-status-reservation.dto';
 
-@UseGuards(AuthGuard)
-@Controller('reversations')
+@UseGuards(AuthGuard, RoleGuard)
+@Controller('reservations')
 export class ReservationController {
   constructor(
     private readonly createReservationService: CreateReservationService,
     private readonly findAllReservationService: FindAllReservationService,
     private readonly findByIdReservationService: FindByIdReservationService,
     private readonly findByUserReservationService: FindByUserReservationService,
+    private readonly updateStatusReservationService: UpdateStatusReservationService,
   ) {}
-
+  @Roles(Role.USER)
   @Post()
   create(@User('id') id: number, @Body() body: CreateReservationDto) {
     return this.createReservationService.execute(id , body);
@@ -37,5 +44,10 @@ export class ReservationController {
     return this.findByIdReservationService.execute(id);
   }
 
+  @Roles(Role.ADMIN)
+  @Patch(':id')
+  updateStatus(@ParamId() id: number, @Body() body: UpdateStatusReservationDto) {
+    return this.updateStatusReservationService.execute(id, body.status)
+}
 
 }
