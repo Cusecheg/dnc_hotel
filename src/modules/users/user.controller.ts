@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe, UseInterceptors, Res, UseGuards, Req, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Body, Param, Delete, ParseIntPipe, UseInterceptors, Res, UseGuards, Req, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, ParseFilePipeBuilder, BadRequestException } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDTO } from "./domain/dto/createUser.dto";
 import { UpdateUserDTO } from "./domain/dto/updateUser.dto";
@@ -11,11 +11,15 @@ import { UserMatchGuard } from "src/shared/guards/userMatch.guard";
 import { ThrottlerGuard } from "@nestjs/throttler";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidatorInterceptor } from "src/shared/interceptors/fileValidator.interceptor";
+import { CustomFileValidator } from "src/shared/interceptors/custom-file.validator";
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('users')
 
 export class UserController {
-    constructor( private userService: UserService ) {}
+    constructor( 
+        private userService: UserService,
+        // private readonly CustomFileValidator: CustomFileValidator
+     ) {}
     
     @UseGuards(ThrottlerGuard)
     @Get()
@@ -51,15 +55,15 @@ export class UserController {
     @Post('avatar')
         uploadAvatar(@User('id') id: Number, 
         @UploadedFile(
-            new ParseFilePipe({
-                validators: [
-                    new FileTypeValidator({
-                        fileType: 'image/*',
-                    }),
-                    new MaxFileSizeValidator({ maxSize: 900 * 1024})
-                ],
+             new ParseFilePipeBuilder()
+            .addMaxSizeValidator({
+            maxSize: 900 * 1024
             })
+            .build({
+            errorHttpStatusCode: 400,
+            }),
         ) avatar: Express.Multer.File){
+            
         return this.userService.uploadAvatar(id, avatar.filename);
         }
     

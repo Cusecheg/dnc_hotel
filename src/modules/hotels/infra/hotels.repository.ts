@@ -1,6 +1,6 @@
 import { Hotel } from "@prisma/client";
 import { CreateHotelDto } from "../domain/dto/create-hotel.dto";
-import { IHotelRepository } from "../domain/repositories/Ihotel.repositories";
+import { IHotelRepository } from "../domain/repositories/Ihotel.repository";
 import { PrismaService } from "src/modules/prisma/prisma.service";
 import { Injectable } from "@nestjs/common";
 

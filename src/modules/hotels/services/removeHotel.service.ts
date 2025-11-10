@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { HOTEL_REPOSITORIES_TOKEN } from '../utils/repositoriesTokens';
-import type { IHotelRepository } from '../domain/repositories/Ihotel.repositories';
+import { HOTEL_TOKEN_REPOSITORY } from '../utils/hotel.token.repository';
+import type { IHotelRepository } from '../domain/repositories/Ihotel.repository';
 
 
 @Injectable()
 export class RemoveHotelService {
   constructor(
-    @Inject(HOTEL_REPOSITORIES_TOKEN)
+    @Inject(HOTEL_TOKEN_REPOSITORY)
     private readonly hotelRepositories: IHotelRepository,
   ){}
   async execute(id: number) {

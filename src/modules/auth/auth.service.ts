@@ -21,7 +21,7 @@ export class AuthService {
         private readonly mailerService: MailerService
     ) {}
 
-    async generateToken(user: User, expiresIn = '1h') {
+    async generateToken(user: User, expiresIn = '24h') {
         const payload = { sub: user.id, name: user.name };
         const options = { 
             expiresIn: expiresIn,

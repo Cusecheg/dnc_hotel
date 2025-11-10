@@ -5,6 +5,7 @@ import { PrismaModule } from "../prisma/prisma.model";
 import { AuthModule } from "../auth/auth.module";
 import { MulterModule } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
+import { CustomFileValidator } from "src/shared/interceptors/custom-file.validator";
 
 @Module({
     imports: [PrismaModule, forwardRef(() => AuthModule), 

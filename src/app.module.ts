@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { from } from 'rxjs';
 import { HotelsModule } from './modules/hotels/hotels.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
 
 @Module({
   imports: [PrismaModule, AuthModule, UserModule, ThrottlerModule.forRoot([
@@ -27,7 +28,8 @@ import { HotelsModule } from './modules/hotels/hotels.module';
       from: `"dnc_hotel" <${process.env.MAILER_FROM}>`,
     }
   }),
-  HotelsModule
+  HotelsModule,
+  ReservationsModule
 ],
   providers: [
     { provide: 'APP_GUARD', useClass: ThrottlerModule }

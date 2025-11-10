@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, UploadedFile, ParseFilePipe, MaxFileSizeValidator, UseInterceptors, FileTypeValidator } from '@nestjs/common';
 import { CreateHotelService } from '../services/createHotel.service';
 import { FindAllHotelService } from '../services/findAllHotel.service';
 import { FindOneHotelService } from '../services/findOneHotel.service';
@@ -17,6 +17,9 @@ import { OwnerHotelGuard } from 'src/shared/guards/ownerHotel.guard';
 import { priceDecorator } from 'src/shared/decorators/price.decorator';
 import { User } from 'src/shared/decorators/user.decorator';
 import { QueryHotelDto } from '../domain/dto/query-hotel.dto';
+import { UploadImageService } from '../services/uploadImageHotel.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileValidatorInterceptor } from 'src/shared/interceptors/fileValidator.interceptor';
 
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('hotels')
@@ -29,6 +32,7 @@ export class HotelsController {
     private readonly findOneHotelService: FindOneHotelService,
     private readonly updateHotelService: UpdateHotelService,
     private readonly removeHotelService: RemoveHotelService,
+    private readonly uploadImageService: UploadImageService,
   ) {}
 
   @Roles(Role.ADMIN, Role.USER)
@@ -58,6 +62,21 @@ export class HotelsController {
   @Post()
   create(@User('id') @Body() createHotelDto: CreateHotelDto) {
     return this.createHotelService.execute(createHotelDto);
+  }
+
+  @UseInterceptors(FileInterceptor('image'), FileValidatorInterceptor)
+  @Patch('image/:hotelId')
+  uploadImage(@Param('hotelId') hotelId: string, 
+  @UploadedFile(
+    new ParseFilePipe({
+      validators: [
+        new MaxFileSizeValidator({ maxSize: 900 * 1024 }) 
+      ],
+    })
+  ) image: Express.Multer.File
+) {
+    console.log('Hotel controller...')
+    return this.uploadImageService.execute(Number(hotelId), image.filename);
   }
 
   @UseGuards(OwnerHotelGuard)
