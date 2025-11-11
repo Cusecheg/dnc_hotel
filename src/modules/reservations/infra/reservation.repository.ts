@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { IReservationRepository } from "../domain/repositories/ireservation.repository";
-import { Reservation, ReservationStatus } from "@prisma/client";
+import { Prisma, Reservation, ReservationStatus } from "@prisma/client";
 import { PrismaService } from "src/modules/prisma/prisma.service";
 
 @Injectable()
@@ -9,8 +9,19 @@ export class ReservationRepository implements IReservationRepository {
         private readonly  prisma: PrismaService
     ){}
 
-  create(data: any): Promise<Reservation> {
-    return this.prisma.reservation.create({ data })
+  create(data: any): Promise<Prisma.ReservationGetPayload<{ include: { 
+          hotel: {
+              select: { name: true}
+          }
+      }}>> {
+    return this.prisma.reservation.create({
+      data,
+      include: {
+        hotel: {
+          select: { name: true }
+        }
+      }
+    })
   }
 
   findById(id: number): Promise<Reservation | null> {
