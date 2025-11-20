@@ -7,8 +7,20 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class HotelsRepositories implements IHotelRepository {
   constructor(private readonly prisma: PrismaService) {}
-  create(data: CreateHotelDto): Promise<Hotel> {
-    return this.prisma.hotel.create({ data });
+  create(data: CreateHotelDto, ownerId: number): Promise<Hotel> {
+
+    if(data){
+      console.log('Estos son los datos que llegaron al repository:', data);
+      console.log('tipo de dato:', typeof data)
+    }
+
+    return this.prisma.hotel.create({ data: {
+      name: data.name,
+      description: data.description,
+      address: data.address,
+      price: data.price,
+      ownerId: ownerId,
+    } });
   }
   findHotelById(id: number): Promise<Prisma.HotelGetPayload<{
     include: {

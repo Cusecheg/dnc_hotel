@@ -13,8 +13,9 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../users/user.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { UploadImageService } from './services/uploadImageHotel.service';
+import { UploadImageHotelService } from './services/uploadImageHotel.service';
 import { HOTEL_TOKEN_REPOSITORY } from './utils/hotel.token.repository';
+import { v4 as uuidv4 } from 'uuid';
 
 @Module({
   imports: [PrismaModule, AuthModule, UserModule,
@@ -23,7 +24,6 @@ import { HOTEL_TOKEN_REPOSITORY } from './utils/hotel.token.repository';
             destination: './uploads-hotels',
             filename: async (req, file, cb) => {
                 console.log('Generating file name for hotel image...');
-                const { v4: uuidv4 } = await import ('uuid'); // <-- esto NO debe estar
                 const filename = `${uuidv4()}-${file.originalname}`;   
                 console.log('Saving hotel image with filename:', filename, 'originalName:', file.originalname, 'mimetype:', file.mimetype);
                 cb(null, filename);
@@ -39,7 +39,7 @@ import { HOTEL_TOKEN_REPOSITORY } from './utils/hotel.token.repository';
     FindByOwnerHotelService,
     FindOneHotelService,
     UpdateHotelService,
-    UploadImageService,
+    UploadImageHotelService,
     RemoveHotelService,
     {
       provide: HOTEL_TOKEN_REPOSITORY,

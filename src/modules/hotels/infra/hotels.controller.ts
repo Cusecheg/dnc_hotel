@@ -17,7 +17,7 @@ import { OwnerHotelGuard } from 'src/shared/guards/ownerHotel.guard';
 import { priceDecorator } from 'src/shared/decorators/price.decorator';
 import { User } from 'src/shared/decorators/user.decorator';
 import { QueryHotelDto } from '../domain/dto/query-hotel.dto';
-import { UploadImageService } from '../services/uploadImageHotel.service';
+import { UploadImageHotelService } from '../services/uploadImageHotel.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileValidatorInterceptor } from 'src/shared/interceptors/fileValidator.interceptor';
 
@@ -32,7 +32,7 @@ export class HotelsController {
     private readonly findOneHotelService: FindOneHotelService,
     private readonly updateHotelService: UpdateHotelService,
     private readonly removeHotelService: RemoveHotelService,
-    private readonly uploadImageService: UploadImageService,
+    private readonly uploadImageHotelService: UploadImageHotelService,
   ) {}
 
   @Roles(Role.ADMIN, Role.USER)
@@ -60,8 +60,9 @@ export class HotelsController {
 
   @Roles(Role.ADMIN)
   @Post()
-  create(@User('id') @Body() createHotelDto: CreateHotelDto) {
-    return this.createHotelService.execute(createHotelDto);
+  create(@User('id') ownerId: number, @Body() createHotelDto: CreateHotelDto) {
+    console.log('Hotel controller - createHotelDto:', createHotelDto);
+    return this.createHotelService.execute(createHotelDto, ownerId);
   }
 
   @UseInterceptors(FileInterceptor('image'), FileValidatorInterceptor)
@@ -76,7 +77,7 @@ export class HotelsController {
   ) image: Express.Multer.File
 ) {
     console.log('Hotel controller...')
-    return this.uploadImageService.execute(Number(hotelId), image.filename);
+    return this.uploadImageHotelService.execute(Number(hotelId), image.filename);
   }
 
   @UseGuards(OwnerHotelGuard)

@@ -4,10 +4,9 @@ import { User } from "@prisma/client";
 import { CreateUserDTO } from "./domain/dto/createUser.dto";
 import { UpdateUserDTO } from "./domain/dto/updateUser.dto";
 import * as bcrypt from 'bcrypt';
-import { userSelectFields } from "prisma/utils/userSelectFields";
+import { userSelectFields } from "../prisma/utils/userSelectFields";
 import { join, resolve } from "path";
 import { stat, unlink } from "fs/promises";
-import { retry } from "rxjs";
 
 @Injectable()
 export class UserService {

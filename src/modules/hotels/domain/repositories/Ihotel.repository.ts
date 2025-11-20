@@ -2,7 +2,7 @@ import { Hotel, Prisma } from '@prisma/client';
 import { CreateHotelDto } from '../dto/create-hotel.dto';
 
 export interface IHotelRepository {
-  create(data: CreateHotelDto): Promise<Hotel>;
+  create(data: CreateHotelDto, ownerId: number): Promise<Hotel>;
   findHotelById(id: number): Promise<Prisma.HotelGetPayload<{
     include: {
       owner: {

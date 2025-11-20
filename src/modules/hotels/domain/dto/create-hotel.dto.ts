@@ -26,10 +26,6 @@ export class CreateHotelDto {
     @IsNotEmpty()
     @MaxLength(255)
     address: string;
-
-    @IsNumber()
-    @IsNotEmpty()
-    ownerId: number;
 }
 
 
